@@ -24,10 +24,6 @@ class Sector:
         self.x.append(convert(x))
         self.y.append(convert(y))
 
-    def check_inside(self, point_x, point_y):
-        x = self.x + self.x[0]
-        y = self.y + self.y[0]
-
 
 def plot_current(sector, ax, m, annotate):
     x = sector.x
