@@ -64,14 +64,12 @@ def make_sectors():
                 splits = line.split(' ')
                 sector_list = list(filter(remove_empty, splits[:len(splits) - 4]))
                 coords = splits[-4:]
-                sector = ':'.join(sector_list)
-                new_line = ' '.join([sector] + coords)
-                blub = sector.split(':')
-                if blub[-3] not in sectors.keys():
-                    sectors[blub[-3]] = Sector(blub[-3], blub[-2], blub[-1])
-                    sectors[blub[-3]].add_coordinate(coords[1], coords[0])
+                sector = ':'.join(sector_list).split('Â·')
+                if sector[-3] not in sectors.keys():
+                    sectors[sector[-3]] = Sector(sector[-3], sector[-2], sector[-1])
+                    sectors[sector[-3]].add_coordinate(coords[1], coords[0])
                 else:
-                    sectors[blub[-3]].add_coordinate(coords[1], coords[0])
+                    sectors[sector[-3]].add_coordinate(coords[1], coords[0])
     return sectors
 
 
