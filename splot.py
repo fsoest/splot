@@ -73,7 +73,7 @@ def make_sectors():
     return sectors
 
 
-def main(sis, annotate, scale, levels):
+def main(sis, annotate, scale, levels, group):
     sis = sis.split(',')
     fig, ax = plt.subplots()
 
@@ -87,15 +87,29 @@ def main(sis, annotate, scale, levels):
 
     # Import sectors from GNG file
     sectors = make_sectors()
+
+    if all(si not in sectors.keys() for si in sis):
+        print('No sector found')
+        return None
+
     for key, val in sectors.items():
         for si in sis:
-            if si in key:
-                plot_current(val, ax, m, False)
-                if levels is None:
-                    if val.lower_level < min_level:
-                        min_level = val.lower_level
-                    if val.upper_level > max_level:
-                        max_level = val.upper_level
+            if group:
+                if si in key:
+                    plot_current(val, ax, m, False)
+                    if levels is None:
+                        if val.lower_level < min_level:
+                            min_level = val.lower_level
+                        if val.upper_level > max_level:
+                            max_level = val.upper_level
+            else:
+                if si == key:
+                    plot_current(val, ax, m, False)
+                    if levels is None:
+                        if val.lower_level < min_level:
+                            min_level = val.lower_level
+                        if val.upper_level > max_level:
+                            max_level = val.upper_level
 
     x_min, x_max = ax.get_xlim()
     x_shift = np.abs((x_max - x_min) / 2)
@@ -107,13 +121,23 @@ def main(sis, annotate, scale, levels):
 
     for key, val in sectors.items():
         for si in sis:
-            if si not in key and (min_level < val.lower_level < max_level or min_level < val.upper_level < max_level):
-                plot_neighbour(val, ax, m)
+            if group:
+                if si not in key and (min_level < val.lower_level < max_level or min_level < val.upper_level < max_level):
+                    plot_neighbour(val, ax, m)
+            else:
+                if si != key and (min_level < val.lower_level < max_level or min_level < val.upper_level < max_level):
+                    plot_neighbour(val, ax, m)
 
     for key, val in sectors.items():
         for si in sis:
-            if si in key:
-                plot_current(val, ax, m, annotate)
+            if group:
+                if si in key:
+                    plot_current(val, ax, m, annotate)
+            else:
+                if si == key:
+                    plot_current(val, ax, m, annotate)
+
+
 
     ax.set_aspect('equal', adjustable='box')
     plt.axis(False)
@@ -125,15 +149,17 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('sectors', type=str, help='Sector IDs to be plotted as main, separated by ,'
                                                            "e.g. HEF,GED,KIR")
-    parser.add_argument('-a', '--annotate', type=bool, help='Boolean, whether to plot SI, Lower, Upper, '
-                                                                     'default False', default=False)
+    parser.add_argument('-a', '--annotate', action='store_true', help='If set, plots SI, Lower, Upper, '
+                                                                     'annotation')
     parser.add_argument('-s', '--scale', type=float, help='Float, how far beyond primary sector to plot,'
                                                                    ' default 0', default=0)
     parser.add_argument('-l', '--levels', type=int, nargs=2, help='Tuple lower upper, levels for which to plot '
                                                                     ' secondary sectors. If no tuple is given, '
                                                                     'the minimum and maximum values of the primary'
                                                                     ' sector are used.', default=None)
+    parser.add_argument('-g', '--group', action='store_true', help='Group flag, if set plots all sectors beginning with'
+                                                                   ' Sector otherwise only plots sectors with'
+                                                                   ' given IDs')
     args = parser.parse_args()
-
-    main(args.sectors, args.annotate, args.scale, args.levels)
+    main(args.sectors, args.annotate, args.scale, args.levels, args.group)
 
