@@ -8,10 +8,13 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  
   -a ANNOTATE, --annotate ANNOTATE
                         Boolean, whether to plot SI, Lower, Upper, default False
+                        
   -s SCALE, --scale SCALE
                         Float, how far beyond primary sector to plot, default 0
+                        
   -l LEVELS LEVELS, --levels LEVELS LEVELS
                         Tuple lower upper, levels for which to plot secondary sectors. If no tuple is given, the
                         minimum and maximum values of the primary sector are used.
