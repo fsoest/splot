@@ -1,5 +1,5 @@
 # splot
-Script to plot sectors given a GNG sector file.
+Script to plot sectors given a GNG sector file. Expects sectors in sectors.txt in main folder.
 
 usage: splot.py [-h] [-a ANNOTATE] [-s SCALE] [-l LEVELS LEVELS] sectors
 
