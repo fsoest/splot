@@ -1,32 +1,5 @@
 import matplotlib.pyplot as plt
-from splot import remove_empty, convert, basemap
-from tqdm import tqdm
-
-
-class Airway:
-    def __init__(self, name):
-        self.name = name
-        self.segments = []
-
-    def add_segment(self, a, b):
-        self.segments.append((a, b))
-
-    def plot(self, ax):
-        m = basemap()
-        for segment in self.segments:
-            a, b = segment
-            x_1, y_1 = m(a.x, a.y)
-            x_2, y_2 = m(b.x, b.y)
-            ax.plot([x_1, x_2], [y_1, y_2], c='k')
-            ax.text(x_1, y_1, a.name)
-            ax.text(x_2, y_2, b.name)
-
-
-class Waypoint:
-    def __init__(self, name, x, y):
-        self.name = name
-        self.x = convert(x)
-        self.y = convert(y)
+from base import remove_empty, Waypoint, Airway
 
 
 def make_airways():

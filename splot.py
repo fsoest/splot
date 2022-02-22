@@ -1,65 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.basemap import Basemap
 from argparse import ArgumentParser
+from base import basemap, remove_empty, Sector, plot_neighbour, plot_current
 
 
-def convert(x):
-    deg = int(x[1:4])
-    minute = int(x[5:7]) / 60
-    sec = int(x[8:10]) / 3600
-    thous = int(x[11:]) / 3600 / 100
-    return deg + minute + sec + thous
-
-
-class Sector:
-    def __init__(self, name, lower_level, upper_level):
-        self.name = name
-        self.lower_level = int(lower_level)
-        self.upper_level = int(upper_level)
-        self.x = []
-        self.y = []
-
-    def add_coordinate(self, x, y):
-        self.x.append(convert(x))
-        self.y.append(convert(y))
-
-
-def plot_current(sector, ax, m, annotate):
-    x = sector.x
-    y = sector.y
-    x.append(x[0])
-    y.append(y[0])
-    x, y = m(x, y)
-    if annotate:
-        ax.text((np.max(x) + np.min(x)) / 2, (np.max(y) + np.min(y)) / 2,
-                '{0}\n{1}\n{2}'.format(sector.name, sector.upper_level,
-                                       sector.lower_level if sector.lower_level != 0 else 'GND'),
-                horizontalalignment='center', verticalalignment='center', fontsize='xx-small')
-    ax.plot(x, y, c='k', linewidth=0.5)
-    ax.fill(x, y, alpha=1, c='#fef0e5')
-
-
-def plot_neighbour(sector, ax, m, annotate):
-    x = sector.x
-    y = sector.y
-    x.append(x[0])
-    y.append(y[0])
-    x, y = m(x, y)
-    ax.plot(x, y, c='#8f8f8f', linewidth=0.5)
-    if annotate:
-        ax.text((np.max(x) + np.min(x)) / 2, (np.max(y) + np.min(y)) / 2,
-                '{0}\n{1}\n{2}'.format(sector.name, sector.upper_level,
-                                       sector.lower_level if sector.lower_level != 0 else 'GND'),
-                horizontalalignment='center', verticalalignment='center', fontsize='xx-small')
-    ax.fill(x, y, alpha=1, c='#ffffff')
-
-
-def remove_empty(s):
-    return s != ''
-
-
-def make_sectors():
+def get_sectors():
     sectors = {}
 
     with open('sectors.txt') as f:
@@ -67,11 +12,11 @@ def make_sectors():
         for line in lines:
             if line != '\n':
                 splits = line.split(' ')
-                sector_list = list(filter(remove_empty, splits[:len(splits) - 4]))
                 coords = splits[-4:]
-                sector = ':'.join(sector_list).split('Â·')
-                if sector[-3] not in sectors.keys():
-                    sectors[sector[-3]] = Sector(sector[-3], sector[-2], sector[-1])
+                rest = splits[:-4]
+                sector = ' '.join(rest).split('Â·')
+                if sector[1] not in sectors.keys():
+                    sectors[sector[-3]] = Sector(sector[1], sector[2], sector[3][:3])
                     sectors[sector[-3]].add_coordinate(coords[1], coords[0])
                 else:
                     sectors[sector[-3]].add_coordinate(coords[1], coords[0])
@@ -84,7 +29,7 @@ def main(sis, annotate, scale, levels, group, neighbours):
     fig, ax = plt.subplots()
 
     # Initialise Basemap for coordinate transformation
-    m = Basemap(width=1, height=1, resolution='l', projection='stere', lat_ts=50, lat_0=50, lon_0=8)
+    m = basemap()
 
     if levels is None:
         min_level, max_level = 600, 0
@@ -92,7 +37,7 @@ def main(sis, annotate, scale, levels, group, neighbours):
         min_level, max_level = levels
 
     # Import sectors from GNG file
-    sectors = make_sectors()
+    sectors = get_sectors()
     if not group:
         if all(si not in sectors.keys() for si in sis):
             print('No sector found')
