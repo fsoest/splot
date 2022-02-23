@@ -1,32 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from argparse import ArgumentParser
-from base import basemap, remove_empty, Sector, plot_neighbour, plot_current
+from base import basemap, plot_neighbour, plot_current, get_sectors_with_copx, get_airways, get_fixes, header
+from pandas import concat
 
 
-def get_sectors():
-    sectors = {}
-
-    with open('sectors.txt') as f:
-        lines = f.readlines()
-        for line in lines:
-            if line != '\n':
-                splits = line.split(' ')
-                coords = splits[-4:]
-                rest = splits[:-4]
-                sector = ' '.join(rest).split('Â·')
-                if sector[1] not in sectors.keys():
-                    sectors[sector[-3]] = Sector(sector[1], sector[2], sector[3][:3])
-                    sectors[sector[-3]].add_coordinate(coords[1], coords[0])
-                else:
-                    sectors[sector[-3]].add_coordinate(coords[1], coords[0])
-    return sectors
-
-
-def main(sis, annotate, scale, levels, group, neighbours):
+def main(sis, annotate, scale, levels, group, neighbours, airways):
     sis = sis.split(',')
     neighbours = neighbours.split(',')
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(nrows=1, ncols=2)
+    ax, ax1 = ax
 
     # Initialise Basemap for coordinate transformation
     m = basemap()
@@ -37,11 +20,14 @@ def main(sis, annotate, scale, levels, group, neighbours):
         min_level, max_level = levels
 
     # Import sectors from GNG file
-    sectors = get_sectors()
+    sectors = get_sectors_with_copx()
+    fixes = get_fixes()
     if not group:
         if all(si not in sectors.keys() for si in sis):
             print('No sector found')
             return None
+
+    copx_list = []
 
     # Plot main sector and calculate upper/lower levels
     for key, val in sectors.items():
@@ -49,6 +35,7 @@ def main(sis, annotate, scale, levels, group, neighbours):
             if group:
                 if si in key:
                     plot_current(val, ax, m, False)
+                    copx_list.append(val.copx_table(fixes, m, ax))
                     if levels is None:
                         if val.lower_level < min_level:
                             min_level = val.lower_level
@@ -57,6 +44,7 @@ def main(sis, annotate, scale, levels, group, neighbours):
             else:
                 if si == key:
                     plot_current(val, ax, m, False)
+                    copx_list.append(val.copx_table(fixes, m, ax))
                     if levels is None:
                         if val.lower_level < min_level:
                             min_level = val.lower_level
@@ -92,10 +80,26 @@ def main(sis, annotate, scale, levels, group, neighbours):
                 if si == key:
                     plot_current(val, ax, m, annotate)
 
+    if airways is not None:
+        airways = airways.split(',')
+        airway_dict = get_airways()
+        for airway in airways:
+            airway_dict[airway].plot(ax)
+
     ax.set_aspect('equal', adjustable='box')
-    plt.axis(False)
+    ax.axis(False)
+    ax1.axis(False)
+
+    copx = concat(copx_list)
+    # copx['climb'] = [int(x) for x in copx['climb'] if x != '*' else '*']
+    # copx['descend'] = [int(x) for x in copx['descend'] if x!= '*' else '*']
+
+    ax1.table(cellText=copx.values, colLabels=header, loc='center')
+
     file_name = '-'.join(sis) + '.svg'
     plt.savefig(file_name if file_name != '.svg' else 'all.svg')
+
+
 
 
 if __name__ == '__main__':
@@ -115,5 +119,7 @@ if __name__ == '__main__':
                                                                    ' given IDs')
     parser.add_argument('-n', '--neighbours', type=str, help='Sector IDs of neighbouring sectors for which to'
                                                              ' add labels', default='')
+    parser.add_argument('-w', '--airways', type=str, help='Airways to plot, separated by ,', default=None)
+
     args = parser.parse_args()
-    main(args.sectors, args.annotate, args.scale, args.levels, args.group, args.neighbours)
+    main(args.sectors, args.annotate, args.scale, args.levels, args.group, args.neighbours, args.airways)
