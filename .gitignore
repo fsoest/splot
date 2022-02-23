@@ -128,5 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+airways.txt
+copx.txt
+fixes.txt
 sectors.txt
 *.svg
