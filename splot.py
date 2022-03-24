@@ -1,15 +1,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from argparse import ArgumentParser
-from base import basemap, plot_neighbour, plot_current, get_sectors_with_copx, get_airways, get_fixes, header
+from base import basemap, plot_neighbour, plot_current, get_sectors_with_copx, get_airways, get_fixes, header, get_sectors
 from pandas import concat
 
 
-def main(sis, annotate, scale, levels, group, neighbours, airways):
+def main(sis, annotate, scale, levels, group, neighbours, airways, copx_bool, waypoints):
     sis = sis.split(',')
     neighbours = neighbours.split(',')
-    fig, ax = plt.subplots(nrows=1, ncols=2)
-    ax, ax1 = ax
+    if copx_bool:
+        fig, ax = plt.subplots(nrows=1, ncols=2)
+        ax, ax1 = ax
+    else:
+        fig, ax = plt.subplots(nrows=1, ncols=1)
 
     # Initialise Basemap for coordinate transformation
     m = basemap()
@@ -20,7 +23,8 @@ def main(sis, annotate, scale, levels, group, neighbours, airways):
         min_level, max_level = levels
 
     # Import sectors from GNG file
-    sectors = get_sectors_with_copx()
+    sectors = get_sectors() # get_sectors_with_copx()
+    sel_sectors = []
     fixes = get_fixes()
     if not group:
         if all(si not in sectors.keys() for si in sis):
@@ -31,10 +35,11 @@ def main(sis, annotate, scale, levels, group, neighbours, airways):
 
     # Plot main sector and calculate upper/lower levels
     for key, val in sectors.items():
-        for si in sis:
+        for i, si in enumerate(sis):
             if group:
                 if si in key:
-                    plot_current(val, ax, m, False)
+                    plot_current(val, ax, m, False, i)
+                    sel_sectors.append(val.name)
                     copx_list.append(val.copx_table(fixes, m, ax))
                     if levels is None:
                         if val.lower_level < min_level:
@@ -43,7 +48,7 @@ def main(sis, annotate, scale, levels, group, neighbours, airways):
                             max_level = val.upper_level
             else:
                 if si == key:
-                    plot_current(val, ax, m, False)
+                    plot_current(val, ax, m, False, i)
                     copx_list.append(val.copx_table(fixes, m, ax))
                     if levels is None:
                         if val.lower_level < min_level:
@@ -72,34 +77,40 @@ def main(sis, annotate, scale, levels, group, neighbours, airways):
 
     # Plot main sector again
     for key, val in sectors.items():
-        for si in sis:
+        for i, si in enumerate(sis):
             if group:
                 if si in key:
-                    plot_current(val, ax, m, annotate)
+                    plot_current(val, ax, m, annotate, i)
             else:
                 if si == key:
-                    plot_current(val, ax, m, annotate)
+                    plot_current(val, ax, m, annotate, i)
 
     if airways is not None:
         airways = airways.split(',')
         airway_dict = get_airways()
         for airway in airways:
-            airway_dict[airway].plot(ax)
+            airway_dict[airway].plot(ax, m)
 
     ax.set_aspect('equal', adjustable='box')
     ax.axis(False)
-    ax1.axis(False)
 
-    copx = concat(copx_list)
-    # copx['climb'] = [int(x) for x in copx['climb'] if x != '*' else '*']
-    # copx['descend'] = [int(x) for x in copx['descend'] if x!= '*' else '*']
+    if copx_list and copx_bool:
+        ax1.axis(False)
+        copx = concat(copx_list, ignore_index=True)
+        for index, row in copx.iterrows():
+            if row['to'] in sel_sectors:
+                copx.drop(index, inplace=True)
+        copx.sort_values('fix', inplace=True)
+        table = ax1.table(cellText=copx.values, colLabels=header, loc='center')
+        table.scale(1, 0.5)
 
-    ax1.table(cellText=copx.values, colLabels=header, loc='center')
+    if waypoints is not None:
+        waypoints = waypoints.split(',')
+        for waypoint in waypoints:
+            fixes[waypoint].annotate(ax, m)
 
-    file_name = '-'.join(sis) + '.svg'
+    file_name = 'sectors/' + '-'.join(sis) + '.svg'
     plt.savefig(file_name if file_name != '.svg' else 'all.svg')
-
-
 
 
 if __name__ == '__main__':
@@ -120,6 +131,8 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--neighbours', type=str, help='Sector IDs of neighbouring sectors for which to'
                                                              ' add labels', default='')
     parser.add_argument('-w', '--airways', type=str, help='Airways to plot, separated by ,', default=None)
+    parser.add_argument('-c', '--copx', action='store_true', help='Add Copx table to plot')
+    parser.add_argument('-y', '--waypoints', type=str, help='Waypoints to plot, separated by ,', default=None)
 
     args = parser.parse_args()
-    main(args.sectors, args.annotate, args.scale, args.levels, args.group, args.neighbours, args.airways)
+    main(args.sectors, args.annotate, args.scale, args.levels, args.group, args.neighbours, args.airways, args.copx, args.waypoints)

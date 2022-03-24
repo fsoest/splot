@@ -5,6 +5,7 @@ from pandas import DataFrame
 
 header = ['FIX', 'NEXT SECTOR', 'DEP', 'ARR', 'C LEVEL', 'D LEVEL']
 
+colors = ['#ffedd9', '#d9fcfe', '#fcdaff', '#fffcd9', '#d9d9ff', '#efffda', '#d8ffe2']
 
 def remove_empty(s):
     return s != ''
@@ -74,8 +75,7 @@ class Airway:
     def add_segment(self, a, b):
         self.segments.append((a, b))
 
-    def plot(self, ax):
-        m = basemap()
+    def plot(self, ax, m):
         for segment in self.segments:
             a, b = segment
             x_1, y_1 = m(a.x, a.y)
@@ -114,8 +114,15 @@ class Waypoint:
         self.x = convert(x)
         self.y = convert(y)
 
+    def annotate(self, ax, m):
+        x, y = m(self.x, self.y)
+        ax.text(x, y - 3500, '{0}'.format(self.name), horizontalalignment='center', verticalalignment='center',
+                fontsize=5, c='#23a819')
+        ax.text(x, y, '$\Delta$', horizontalalignment='center', verticalalignment='center',
+                fontsize=5, c='#23a819')
 
-def plot_current(sector, ax, m, annotate):
+
+def plot_current(sector, ax, m, annotate, i=0):
     x = sector.x
     y = sector.y
     x.append(x[0])
@@ -127,7 +134,7 @@ def plot_current(sector, ax, m, annotate):
                                        sector.lower_level if sector.lower_level != 0 else 'GND'),
                 horizontalalignment='center', verticalalignment='center', fontsize='xx-small')
     ax.plot(x, y, c='k', linewidth=0.5)
-    ax.fill(x, y, alpha=1, c='#fef0e5')
+    ax.fill(x, y, alpha=1, c=colors[i % len(colors)])
 
 
 def plot_neighbour(sector, ax, m, annotate):
@@ -151,7 +158,10 @@ def get_fixes():
         lines = f.readlines()
         for line in lines:
             split = line.split(' ')
-            fixes[split[0]] = Waypoint(split[0], split[-1], split[-2])
+            if ';' in split:
+                fixes[split[0]] = Waypoint(split[0], split[-3], split[-4])
+            else:
+                fixes[split[0]] = Waypoint(split[0], split[-1], split[-2])
     return fixes
 
 
