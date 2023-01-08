@@ -140,12 +140,12 @@ if __name__ == '__main__':
                                                                    ' Sector otherwise only plots sectors with'
                                                                    ' given IDs')
     parser.add_argument('-n', '--neighbours', type=str, help='Sector IDs of neighbouring sectors for which to'
-                                                             ' add labels', default='')
+                                                             ' add labels, either e.g. GIN1,GIN2 or GIN,TAU', default='')
     parser.add_argument('-w', '--airways', type=str, help='Airways to plot, separated by ,', default=None)
     parser.add_argument('-c', '--copx', action='store_true', help='Add Copx table to plot')
     parser.add_argument('-y', '--waypoints', type=str, help='Waypoints to plot, separated by ,', default=None)
     parser.add_argument('-f', '--coloured', action='store_true', help='If set, sectors have different colours')
-    parser.add_argument('-d', '--dotted', type=str, help='Sector IDs of sectors to plot with dashed lines', default='')
+    parser.add_argument('-d', '--dotted', type=str, help='Sector IDs (GIN1,GIN2 or GIN,TAU) of sectors to plot with dashed lines', default='')
 
     args = parser.parse_args()
     main(args.sectors, args.annotate, args.scale, args.levels, args.group, args.neighbours, args.airways, args.copx,
