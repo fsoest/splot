@@ -1,11 +1,13 @@
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 from pandas import DataFrame
+from matplotlib.colors import to_hex
 
 
 header = ['FIX', 'NEXT SECTOR', 'DEP', 'ARR', 'C LEVEL', 'D LEVEL']
 
-colors = ['#ffedd9', '#d9fcfe', '#fcdaff', '#fffcd9', '#d9d9ff', '#efffda', '#d8ffe2']
+hatch = ['/', '\\', '|', '-', '+', 'x', 'o', 'O', '.', '*']
+
 
 def remove_empty(s):
     return s != ''
@@ -19,7 +21,7 @@ def convert(x):
     deg = int(x[1:4])
     minute = int(x[5:7]) / 60
     sec = int(x[8:10]) / 3600
-    thous = int(x[11:]) / 3600 / 100
+    thous = int(x[11:]) / 3600 / 1000
     return deg + minute + sec + thous
 
 
@@ -82,7 +84,7 @@ class Airway:
             x_2, y_2 = m(b.x, b.y)
             # ax.text(x_1, y_1, a.name)
             # ax.text(x_2, y_2, b.name)
-            ax.plot([x_1, x_2], [y_1, y_2], c='#9ebdff', linewidth=0.4)
+            ax.plot([x_1, x_2], [y_1, y_2], c='#FF0000', linewidth=0.4)
 
 
 class Copx:
@@ -117,12 +119,17 @@ class Waypoint:
     def annotate(self, ax, m):
         x, y = m(self.x, self.y)
         ax.text(x, y - 3500, '{0}'.format(self.name), horizontalalignment='center', verticalalignment='center',
-                fontsize=5, c='#23a819')
-        ax.text(x, y, '$\Delta$', horizontalalignment='center', verticalalignment='center',
-                fontsize=5, c='#23a819')
+                fontsize=4, c='#646464', fontfamily='Calibri', fontweight='bold')
+        ax.scatter(x, y, marker='^', c='#646464', s=2.5)
 
 
-def plot_current(sector, ax, m, annotate, i=0):
+def plot_current(sector, ax, m, annotate, coloured, i=0):
+    if coloured:
+        colors = ['#ffedd9', '#d9fcfe', '#fcdaff', '#fffcd9', '#d9d9ff', '#efffda', '#d8ffe2']
+        border_colors = ['#ffc380', '#4df6ff', '#f266ff', '#fff266', '#6666ff', '#b2ff4d', '#66ff8c']
+    else:
+        colors = ['#f5f5f5']
+        border_colors = ['#808080']
     x = sector.x
     y = sector.y
     x.append(x[0])
@@ -133,23 +140,26 @@ def plot_current(sector, ax, m, annotate, i=0):
                 '{0}\n{1}\n{2}'.format(sector.name, sector.upper_level,
                                        sector.lower_level if sector.lower_level != 0 else 'GND'),
                 horizontalalignment='center', verticalalignment='center', fontsize='xx-small')
-    ax.plot(x, y, c='k', linewidth=0.5)
+    ax.plot(x, y, linewidth=0.5, c=border_colors[i % len(colors)])
     ax.fill(x, y, alpha=1, c=colors[i % len(colors)])
 
 
-def plot_neighbour(sector, ax, m, annotate):
+def plot_neighbour(sector, ax, m, annotate, dotted=False):
     x = sector.x
     y = sector.y
     x.append(x[0])
     y.append(y[0])
     x, y = m(x, y)
-    ax.plot(x, y, c='#8f8f8f', linewidth=0.5)
+    if dotted:
+        ax.plot(x, y, c='#b8b8b8', linewidth=0.5, linestyle=(0, (5, 5)))
+    else:
+        ax.plot(x, y, c='#8f8f8f', linewidth=0.2, linestyle='solid')
+
     if annotate:
         ax.text((np.max(x) + np.min(x)) / 2, (np.max(y) + np.min(y)) / 2,
                 '{0}\n{1}\n{2}'.format(sector.name, sector.upper_level,
                                        sector.lower_level if sector.lower_level != 0 else 'GND'),
-                horizontalalignment='center', verticalalignment='center', fontsize='xx-small')
-    ax.fill(x, y, alpha=1, c='#ffffff')
+                horizontalalignment='center', verticalalignment='center', fontsize='xx-small', alpha=0.5)
 
 
 def get_fixes():
@@ -195,7 +205,7 @@ def get_sectors():
                 splits = line.split(' ')
                 coords = splits[-4:]
                 rest = splits[:-4]
-                sector = ' '.join(rest).split('Â·')
+                sector = ' '.join(rest).split('@')
                 if sector[1] not in sectors.keys():
                     sectors[sector[-3]] = Sector(sector[1], sector[2], sector[3][:3])
                     sectors[sector[-3]].add_coordinate(coords[1], coords[0])
