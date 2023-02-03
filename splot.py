@@ -124,7 +124,6 @@ if __name__ == '__main__':
                                                              ' add labels, either e.g. GIN1,GIN2 or GIN,TAU', default=None)
     parser.add_argument('-w', '--airways', type=str, help='Airways to plot, separated by ,', default=None)
     parser.add_argument('-y', '--waypoints', type=str, help='Waypoints to plot, separated by ,', default=None)
-    #parser.add_argument('-f', '--coloured', action='store_true', help='If set, sectors have different colours')
     parser.add_argument('-f', '--colours', type=str, help='Either + for alternating colours, or string of indices of colours (i.e. 021320) for each sector', default=None)
     parser.add_argument('-d', '--dotted', type=str, help='Sector IDs (GIN1,GIN2 or GIN,TAU) of sectors to plot with dashed lines', default=None)
 
