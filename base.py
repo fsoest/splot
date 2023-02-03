@@ -125,8 +125,10 @@ class Waypoint:
 
 def plot_current(sector, ax, m, annotate, coloured, i=0):
     if coloured:
-        colors = ['#ffedd9', '#d9fcfe', '#fcdaff', '#fffcd9', '#d9d9ff', '#efffda', '#d8ffe2']
-        border_colors = ['#ffc380', '#4df6ff', '#f266ff', '#fff266', '#6666ff', '#b2ff4d', '#66ff8c']
+        colors = ['#ffedd9', '#d9fcfe', '#fcdaff', '#fffcd9', '#d9d9ff', '#efffda', '#d8ffe2', '#c3fdf4', '#c5f0fc',
+                  '#eaeaeb']
+        border_colors = ['#ffc380', '#4df6ff', '#f266ff', '#fff266', '#6666ff', '#b2ff4d', '#66ff8c', '#4df9e0',
+                         '#51d2f6', '#b6b6b9']
     else:
         colors = ['#f5f5f5']
         border_colors = ['#808080']
