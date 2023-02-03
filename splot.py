@@ -81,10 +81,10 @@ def main(sis, annotate, scale, levels, group, neighbours, airways, copx_bool, wa
     for key, val in sectors.items():
         for neighbour in neighbours:
             if neighbour in key:
-                plot_neighbour(val, ax, m, True)
+                plot_neighbour(val, ax, m, key in neighbours)
         for dot in dotted:
             if dot in key:
-                plot_neighbour(val, ax, m, True, True)
+                plot_neighbour(val, ax, m, key in neighbours, True)
 
     # Plot main sector again
     for key, val in sectors.items():

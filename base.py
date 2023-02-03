@@ -205,7 +205,7 @@ def get_sectors():
                 splits = line.split(' ')
                 coords = splits[-4:]
                 rest = splits[:-4]
-                sector = ' '.join(rest).split('@')
+                sector = ' '.join(rest).split('·')
                 if sector[1] not in sectors.keys():
                     sectors[sector[-3]] = Sector(sector[1], sector[2], sector[3][:3])
                     sectors[sector[-3]].add_coordinate(coords[1], coords[0])
