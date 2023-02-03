@@ -26,7 +26,10 @@ def main(sis, annotate, scale, levels, group, neighbours, airways, copx_bool, wa
     # Import sectors from GNG file
     sectors = get_sectors() # get_sectors_with_copx()
     sel_sectors = []
-    fixes = get_fixes()
+    if waypoints is not None:
+        fixes = get_fixes()
+    else:
+        fixes = []
     if not group:
         if all(si not in sectors.keys() for si in sis):
             print('No sector found')
