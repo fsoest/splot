@@ -5,13 +5,17 @@ from base import basemap, plot_neighbour, plot_current, get_sectors_with_copx, g
 import os
 
 
-def main(sis, annotate, scale, levels, group, neighbours, airways, waypoints, coloured, dotted):
+def main(sis, annotate, scale, levels, group, neighbours, airways, waypoints, colours, dotted):
     sis = sis.split(',')
     if neighbours is not None:
         neighbours = neighbours.split(',')
     if dotted is not None:
         dotted = dotted.split(',')
     fig, ax = plt.subplots(nrows=1, ncols=1)
+
+    if colours is not None:
+        if len(colours) != len(sis) and colours != '+':
+            print('Colour parameter must either be + (alternating) or same length as sector input!')
 
     # Initialise Basemap for coordinate transformation
     m = basemap()
@@ -34,12 +38,13 @@ def main(sis, annotate, scale, levels, group, neighbours, airways, waypoints, co
     def plot_main():
         for key, val in sectors.items():
             for i, si in enumerate(sis):
+                colour_index = i if (colours == '+') or colours is None  else int(colours[i])
                 if group:
                     if si in key:
-                        plot_current(val, ax, m, annotate, coloured, i)
+                        plot_current(val, ax, m, annotate, colours is not None, colour_index)
                 else:
                     if si == key:
-                        plot_current(val, ax, m, annotate, coloured, i)
+                        plot_current(val, ax, m, annotate, colours is not None, colour_index)
 
     plot_main()
 
@@ -119,9 +124,10 @@ if __name__ == '__main__':
                                                              ' add labels, either e.g. GIN1,GIN2 or GIN,TAU', default=None)
     parser.add_argument('-w', '--airways', type=str, help='Airways to plot, separated by ,', default=None)
     parser.add_argument('-y', '--waypoints', type=str, help='Waypoints to plot, separated by ,', default=None)
-    parser.add_argument('-f', '--coloured', action='store_true', help='If set, sectors have different colours')
+    #parser.add_argument('-f', '--coloured', action='store_true', help='If set, sectors have different colours')
+    parser.add_argument('-f', '--colours', type=str, help='Either + for alternating colours, or string of indices of colours (i.e. 021320) for each sector', default=None)
     parser.add_argument('-d', '--dotted', type=str, help='Sector IDs (GIN1,GIN2 or GIN,TAU) of sectors to plot with dashed lines', default=None)
 
     args = parser.parse_args()
     main(args.sectors, args.annotate, args.scale, args.levels, args.group, args.neighbours, args.airways,
-         args.waypoints, args.coloured, args.dotted)
+         args.waypoints, args.colours, args.dotted)
