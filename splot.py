@@ -3,6 +3,7 @@ import numpy as np
 from argparse import ArgumentParser
 from base import basemap, plot_neighbour, plot_current, get_sectors_with_copx, get_airways, get_fixes, header, get_sectors
 from pandas import concat
+import os
 
 
 def main(sis, annotate, scale, levels, group, neighbours, airways, copx_bool, waypoints, coloured, dotted):
@@ -122,7 +123,9 @@ def main(sis, annotate, scale, levels, group, neighbours, airways, copx_bool, wa
         for waypoint in waypoints:
             fixes[waypoint].annotate(ax, m)
 
-    file_name = 'sectors/' + '-'.join(sis) + '.svg'
+    if not os.path.exists('output'):
+        os.makedirs('output')
+    file_name = 'output/' + '-'.join(sis) + '.svg'
     plt.savefig(file_name if file_name != '.svg' else 'all.svg')
     plt.show()
 
