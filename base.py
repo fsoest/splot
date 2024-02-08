@@ -139,8 +139,7 @@ def plot_current(sector, ax, m, annotate, coloured, i=0):
     x, y = m(x, y)
     if annotate:
         ax.text((np.max(x) + np.min(x)) / 2, (np.max(y) + np.min(y)) / 2,
-                '{0}\n{1}\n{2}'.format(sector.name, sector.upper_level,
-                                       sector.lower_level if sector.lower_level != 0 else 'GND'),
+                f'{sector.upper_level}\n{sector.name}\n{sector.lower_level if sector.lower_level != 0 else "GND"}',
                 horizontalalignment='center', verticalalignment='center', fontsize='xx-small')
     ax.plot(x, y, linewidth=0.5, c=border_colors[i % len(colors)])
     ax.fill(x, y, alpha=1, c=colors[i % len(colors)])
