@@ -119,8 +119,8 @@ class Waypoint:
     def annotate(self, ax, m):
         x, y = m(self.x, self.y)
         ax.text(x, y - 3500, '{0}'.format(self.name), horizontalalignment='center', verticalalignment='center',
-                fontsize=4, c='#646464', fontfamily='Calibri', fontweight='bold')
-        ax.scatter(x, y, marker='^', c='#646464', s=2.5)
+                fontsize=8, c='#646464', fontfamily='Calibri', fontweight='bold')
+        ax.scatter(x, y, marker='^', c='#646464', s=5)
 
 
 def plot_current(sector, ax, m, annotate, coloured, i=0):
@@ -158,8 +158,7 @@ def plot_neighbour(sector, ax, m, annotate, dotted=False):
 
     if annotate:
         ax.text((np.max(x) + np.min(x)) / 2, (np.max(y) + np.min(y)) / 2,
-                '{0}\n{1}\n{2}'.format(sector.name, sector.upper_level,
-                                       sector.lower_level if sector.lower_level != 0 else 'GND'),
+                f'{sector.upper_level}\n{sector.name}\n{sector.lower_level if sector.lower_level != 0 else "GND"}',
                 horizontalalignment='center', verticalalignment='center', fontsize='xx-small', alpha=0.5)
 
 
@@ -185,8 +184,10 @@ def get_airways():
             if line != '\n':
                 splits = line.split(' ')
                 sector_list = list(filter(remove_empty, splits))
-                a = Waypoint(sector_list[6][3:], sector_list[2], sector_list[1])
-                b = Waypoint(sector_list[8][3:], sector_list[4], sector_list[3])
+                # a = Waypoint(sector_list[6][3:], sector_list[2], sector_list[1])
+                # b = Waypoint(sector_list[8][3:], sector_list[4], sector_list[3])
+                a = Waypoint(sector_list[0], sector_list[2], sector_list[1])
+                b = Waypoint(sector_list[0], sector_list[4], sector_list[3])
                 airway_name = sector_list[0]
                 if airway_name in airways.keys():
                     airways[airway_name].add_segment(a, b)
