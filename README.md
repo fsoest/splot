@@ -1,7 +1,15 @@
+# Installation
+
+To install the required packages, run  
+
+  pip install -r requirements.txt
+
 # splot
+
 Script to plot sectors given a GNG sector file. Expects sectors in sectors.txt in main folder, taken from the Developer SCT.
 
-usage: splot.py [-h] [-a] [-s SCALE] [-l LEVELS LEVELS] [-g] [-n NEIGHBOURS] [-w AIRWAYS] [-c] [-y WAYPOINTS] [-f]
+usage: 
+  splot.py [-h] [-a] [-s SCALE] [-l LEVELS LEVELS] [-g] [-n NEIGHBOURS] [-w AIRWAYS] [-c] [-y WAYPOINTS] [-f]
                 [-d DOTTED]
                 sectors
 
